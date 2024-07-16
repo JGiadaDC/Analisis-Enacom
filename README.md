@@ -24,7 +24,7 @@ Puedes emcontrar mas informaciiones sobre [streamlit] en [https://streamlit.io/]
 > para la visualizaciones de datos
 
 
-## Contenidos del Repositorio
+### Contenidos del Repositorio
  
 - ETL-EDA.ipynb: Análisis Exploratorio de Datos detallado, incluyendo gráficos, análisis de valores faltantes, outliers y registros duplicados.
 - dashboard: dashboard.html: Dashboard interactivo que permite explorar los datos con diferentes filtros.
@@ -36,6 +36,14 @@ dashboard_source_code/: Código fuente utilizado para generar el dashboard.
 > Primero hay que explorar los datos "crudos" en formato Excel proporcionados por la empresa, para tener una idea mas clara de cuales de todos los datos utilizar efectivamente para el analisis. 
 
 ### ETL-EDA
+El notebook de EDA (ETL-EDA.ipynb) incluye:
+
+-Búsqueda de valores faltantes: Identificación y tratamiento de datos incompletos.
+-Detección de valores atípicos: Análisis de outliers y su impacto en el dataset.
+-Registros duplicados: Identificación y eliminación de registros redundantes.
+-Visualizaciones: Gráficos coherentes según la tipología de variables (histogramas, box plots, scatter plots, etc.).
+-Conclusiones: Comentarios y análisis en celdas Markdown.
+
 Se importan las librerias necesarias y el file excel proporcionado, con todas sus hojas, imprimendo los nombres de cada una 
 ```sh
 all_sheets = pd.read_excel('Internet.xlsx', sheet_name=None)
@@ -60,40 +68,40 @@ Para este proposito se crea un grafico que ponga en relacion media de bajada y p
 
 Veremos, como esperado, que en capital federal la media de bajada destaca respecto a otras provincias  como Santa Cruz o Tierra del Fuego. Que se podria hacer para llegar a una buena media en estas zonas? 
 
-### Creacion del 1 KPI
-#### Incrementar la media de bajada en el proximo ano, hasta la media nacional, en las provincias que no llegan a la media. 
-
-Provincias como Catamarca, Chaco, y Chubut tienen velocidades de bajada significativamente menores que la media nacional. Estas provincias necesitarán aumentar su velocidad de bajada en varios Mbps para alcanzar la meta establecida para 2025.
-
-- Evaluación de infraestructura:
-
-Realizar una evaluación detallada de la infraestructura de Internet en las provincias con menores velocidades.
-Identificar los cuellos de botella y las áreas que requieren inversiones prioritarias.
-
-- Inversión en tecnología:
-
-Fomentar la inversión en tecnologías avanzadas como la fibra óptica, especialmente en áreas rurales y menos desarrolladas.
-Establecer incentivos para los proveedores de servicios de Internet que inviertan en mejorar la infraestructura en estas provincias.
-
-- Programas de subsidios:
-
-Implementar programas de subsidios para apoyar la mejora de la infraestructura de Internet en regiones desfavorecidas.
-Estos subsidios pueden estar dirigidos tanto a proveedores de servicios de Internet como a los consumidores finales.
-
-- Monitoreo continuo:
-
-Establecer un sistema de monitoreo continuo para evaluar el progreso hacia la meta de 2024.
-Publicar informes periódicos para mantener la transparencia y la rendición de cuentas.
-
-- Educación y concienciación:
-
-Lanzar campañas de educación y concienciación para informar a las comunidades sobre los beneficios de mejorar la infraestructura de Internet.
-Involucrar a las comunidades locales en el proceso de planificación y mejora de las conexiones.
-
 **penetracion:** es un df que une los accesos por cada 100 hogares con los de 100 habitantes.
 De estos graficos se notan la cantidad de outliers. Podria significar que el acceso a internet no tiene un valor medio a nivel nacional, sino cambia mucho de zona a zona. hay que destacar, pero, que a pesar del descostarse de los valores de la media, parecen seguir una tendencia comun o sea suben, lo que nos hace entender que en general el acceso va mejorando.
 
-### Calculo del segundo KPI: 
+**ingresos:** se explora el df ingresos y lo primero que se nota es que las eentradas son en Pesos Argentino.  
+Esto es un aspecto importante a considerar, a la hora de graficar y calcular eventuales KPI, ya que la inflacion ha afectado notevolmente el Pais en estos anos. Se decide actuar una medida de proporcionalidad, dolarizando los ingresos.
+```sh
+# Calcular los ingresos en USD usando la columna 'Ingresos (miles de pesos)' y 'Tipo de cambio'
+ingresos_usd['Ingresos (USD)'] = ingresos_usd['Ingresos (miles de pesos)'] / ingresos_usd['Cambio']
+```
+***Importante --*** se decidio tomar en cuenta como cambio el proedio del ano y no el cambio efectivo. Esto afectara un poco los valores y las graficas que se sacaran.
+
+**acc_vel:** info sobre las velocidades en cada Provincia, por periodo.
+Podemos ver cuales son las provincias que tienen las velocidades de conexion mas bajas, para evenyualmente implementar acciones con el objetivo de proporcionar una velocidad mas alta en estas zonas.
+
+**acc_tec:** de estos datos se puede entender cuales son las tecnologias mas usadas en las varias provincias.
+El uso de Fibra optica es un punto interesante a evaluar en este contexto, ya que suele representar la tecnologia mas avanzada deseable para los accesos a internet, debido a su velocidad y estabilidad.
+Por esto se podria crear un nuevo KPI.
+
+## Dashboard Interactivo
+El dashboard <streamlit.py> permite:
+Exploración de datos: Filtros interactivos para detallar la información.
+Visualización clara: Gráficos adecuados para cada tipo de variable.
+Estética y funcionalidad: Diseño limpio y fácil de interpretar.
+
+## Análisis de KPIs
+El análisis de KPIs (KPI_analysis.ipynb) incluye:
+
+-KPI propuesto: Aumento del 2% en el acceso al servicio de internet para el próximo trimestre por cada 100 hogares, por provincia.
+KPIs adicionales:
+- Incremento de la media de bajada para alcanzar la media nacional en 2025.
+- Incremento en el uso de la fibra optica.
+Cada KPI es medido, graficado y analizado.
+
+### Calculo del KPI propuesto: 
 #### Aumentar en un 2% el acceso al servicio de internet para el próximo trimestre, cada 100 hogares, por provincia
 
 ```sh
@@ -101,7 +109,7 @@ De estos graficos se notan la cantidad de outliers. Podria significar que el acc
 penetracion['Nuevo_Acceso_por_100_hogares'] = penetracion['Accesos por cada 100 hogares'] * 1.02
 ```
 
-### Conclusiones Basadas en el KPI Calculado:
+#### Conclusiones Basadas en el KPI Calculado:
 - Evaluación del Cumplimiento del Objetivo:
 
 Cumplimiento del Objetivo del 2%: Si la mayoría de las provincias han alcanzado o superado el aumento del 2% en acceso a internet, se puede concluir que las estrategias implementadas están siendo efectivas.
@@ -120,23 +128,42 @@ Comparación entre Provincias: Analizar cómo se comparan las provincias entre s
 
 Tendencias Generales: Observar tendencias generales en el acceso a internet puede ayudar a identificar patrones. Por ejemplo, si ciertas regiones geográficas muestran consistentemente bajo crecimiento, esto puede indicar una necesidad de enfoques regionales específicos.
 
-**ingresos:** se explora el df ingresos y lo primero que se nota es que las eentradas son en Pesos Argentino.  
-Esto es un aspecto importante a considerar, a la hora de graficar y calcular eventuales KPI, ya que la inflacion ha afectado notevolmente el Pais en estos anos. Se decide actuar una medida de proporcionalidad, dolarizando los ingresos.
-```sh
-# Calcular los ingresos en USD usando la columna 'Ingresos (miles de pesos)' y 'Tipo de cambio'
-ingresos_usd['Ingresos (USD)'] = ingresos_usd['Ingresos (miles de pesos)'] / ingresos_usd['Cambio']
-```
-***Importante --*** se decidio tomar en cuenta como cambio el proedio del ano y no el cambio efectivo. Esto afectara un poco los valores y las graficas que se sacaran.
+### KPI 2
+#### Incrementar la media de bajada en el proximo ano, hasta la media nacional, en las provincias que no llegan a la media. 
 
-**acc_vel:** info sobre las velocidades en cada Provincia, por periodo.
-Podemos ver cuales son las provincias que tienen las velocidades de conexion mas bajas, para evenyualmente implementar acciones con el objetivo de proporcionar una velocidad mas alta en estas zonas.
+Descripción: Incrementar la velocidad de bajada promedio en las provincias que, al 2023, no alcanzan la media nacional de 77.78 Mbps. El objetivo es que todas las provincias por debajo de esta media la alcancen para el año 2025.
+Provincias como Catamarca, Chaco, y Chubut tienen velocidades de bajada significativamente menores que la media nacional. Estas provincias necesitarán aumentar su velocidad de bajada en varios Mbps para alcanzar la meta establecida para 2025.
+Provincias por Debajo de la Media Nacional en 2023
 
-**acc_tec:** de estos datos se puede entender cuales son las tecnologias mas usadas en las varias provincias.
-El uso de Fibra optica es un punto interesante a evaluar en este contexto, ya que suele representar la tecnologia mas avanzada deseable para los accesos a internet, debido a su velocidad y estabilidad.
-Por esto se podria crear un nuevo KPI.
+Estrategias para Alcanzar el KPI
+-Inversiones en Infraestructura: Desarrollar y mejorar la infraestructura de red en las provincias identificadas.
+-Actualización Tecnológica: Implementar tecnologías más avanzadas como la fibra óptica.
+-Programas de Incentivos: Ofrecer incentivos a proveedores locales para mejorar sus servicios.
+-Colaboración con Autoridades Locales: Trabajar con gobiernos locales para facilitar el despliegue de infraestructura.
+-Periodicidad: Monitorear trimestralmente el progreso de la velocidad de bajada en las provincias objetivo.
+-Herramientas: Utilizar dashboards interactivos para visualizar el progreso y ajustar estrategias según sea necesario.
+-Indicadores Complementarios: Evaluar también otros indicadores como la satisfacción del cliente y la tasa de penetración del mercado.
+
+-Implementar programas de subsidios para apoyar la mejora de la infraestructura de Internet en regiones desfavorecidas.
+Estos subsidios pueden estar dirigidos tanto a proveedores de servicios de Internet como a los consumidores finales.
+
+- Educación y concienciación:
+Lanzar campañas de educación y concienciación para informar a las comunidades sobre los beneficios de mejorar la infraestructura de Internet.
+Involucrar a las comunidades locales en el proceso de planificación y mejora de las conexiones.
 
 ### KPI 3:
 #### Incremento percentual en el uso de fibra optica en el proximo trimestre
+Del EDA se nota que a parte Buenos Aires, el acceso a la fibra optica no esta muy bien 
+distribuido en el Pais, en general es bastante bajo. Se podria incrementar el uso 
+de esta tecnologia? Como?
+
+Implementación del KPI de Incremento en el Uso de la Fibra Óptica
+El KPI del incremento en el uso de la fibra óptica puede calcularse como el 
+porcentaje de crecimiento de los accesos de fibra óptica de un periodo a otro.
+
+Cálculo del Incremento en el Uso de la Fibra Óptica: Calcula el porcentaje de 
+incremento de accesos de fibra óptica entre los distintos años disponibles. 
+
 Para el calculo de este KPI, primero voy a medir el incremento en el ano pasado (2022-2023)
 
 ```sh
@@ -148,5 +175,11 @@ Hay que remarcar que se excluyo Buenos Aires del calculo, ya que tiene muy buen 
 ```sh
 internet['Acceso proyectado fibra optica'] = internet['Accesos fibra optica'] * 1.13
 ```
+
+## Reporte Final:
+
+Resumen del análisis: Principales hallazgos del EDA y del dashboard.
+Conclusiones: Insights y recomendaciones basadas en los datos.
+Propuestas de mejora: Sugerencias para mejorar la calidad del servicio y oportunidades de crecimiento.
 
 
