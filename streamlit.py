@@ -46,11 +46,11 @@ align-items: center;
 
 ##############################################
 # importamos los datos 
-ingresos = pd.read_csv('ingresos_usd.csv')
-internet = pd.read_csv('internet.csv')
+ingresos = pd.read_csv('data\ingresos_usd.csv')
+internet = pd.read_csv('data\internet.csv')
 
 # file de las provincias
-gdf = gpd.read_file("ProvinciasArgentina.geojson")
+'''gdf = gpd.read_file("ProvinciasArgentina.geojson")'''
 
 
 # Titulo
@@ -145,41 +145,36 @@ fibra_2023 = df_fibra_agrupado.loc[df_fibra_agrupado['Año'] == 2023, 'Fibra óp
 aumento_percentuale = ((fibra_2023 - fibra_2022) / fibra_2022) * 100
 
 #calculo del 3 KPI
-incremento_proyectado = 13.52/100  # Convertimos el porcentaje a fracción
-
-# Calcular el uso actual de fibra óptica
-fibra_optica_2023 = internet[(internet['Año'] == 2023) & (internet['Provincia'] != 'Buenos Aires')]['Fibra óptica'].sum()
-
-# Calcular el incremento proyectado
-incremento_fibra_optica = fibra_optica_2023 * incremento_proyectado
-uso_fibra_optica_proyectado = fibra_optica_2023 + incremento_fibra_optica
+incremento_trimestral = 0.99
+internet['Fibra óptica proyectada'] = internet['Fibra óptica'] * (1 + incremento_trimestral)
 
 
 ############################################################
 # VISUALIZACIONES 
-#1 
-# Creare il grafico di torta con Plotly Express
+#1  Tecnologias
 def make_pie(selected_province):
     df_filtered = internet[internet['Provincia'] == selected_province]
     
     # Melt del DataFrame per avere una struttura adatta a px.pie
     df_melted = df_filtered.melt(id_vars=['Año', 'Trimestre', 'Provincia'], 
-                                 value_vars=['ADSL', 'Cablemodem', 'Fibra óptica'],
+                                 value_vars=['Fibra óptica', 'Cablemodem', 'ADSL'],
                                  var_name='Tecnología', value_name='Accesos')
 
     fig = px.pie(df_melted, names='Tecnología', values='Accesos', 
                  title=f'Distribución de Accesos a Internet por Tecnología en {selected_province}')
+    
+    fig.update_traces(marker=dict(colors=['violet'])) 
 
     return fig
 
 # 2: KPI2 Alcanzar la media de bajada nacional para el 2025
 # Crear figura interactiva con Plotly
-def make_bar(selected_year):
+def make_bar(internet):
     fig = px.bar(provincias_por_debajo_media_2023_unicas,
              x='Provincia',
              y='Mbps (Media de bajada)',
              color='Mbps (Media de bajada)',  # Aplicar color según el valor de Mbps
-             color_continuous_scale='viridis',  # Escala cromática
+             color_continuous_scale='magma',  # Escala cromática
              title='Meta de Mbps para 2025 por Provincia',
              labels={'Mbps (Media de bajada)': 'Mbps (Media de bajada)'})
 
@@ -194,15 +189,12 @@ def make_bar(selected_year):
     return fig
 
 # 3 KPI propuesto: incremento del 2% en el acceso a 100hogares
-def make_bar2(penetracion):
+def make_bar2(internet):
     fig = px.bar(ultimo_trimestre,x='Provincia', y=['Accesos por cada 100 hogares', 'Acceso proyectado/100 hogares'],
                  barmode='group',
                  title='Acceso al servicio de internet: Actual vs Proyectado por Provincia',
                  labels={'value': 'Accesos por cada 100 hogares'})
-    
-    fig.update_traces(hovertemplate='Provincia: %{x}<br>' +
-                            'Accesos por cada 100 hogares: %{y[0]:.2f}<br>' +
-                            'Nuevo_Acceso_por_100_hogares: %{y[1]:.2f}')
+
     fig.update_layout(xaxis_title='Provincia', yaxis_title='Accesos por cada 100 hogares',
                   xaxis_tickangle=-45, showlegend=True)
     return fig
@@ -218,9 +210,16 @@ def make_area(ingresos):
     xaxis_title='Trimestre',
     yaxis_title='Ingresos (USD)',
     xaxis=dict(tickmode='linear'),
-    template='plotly_white')
+    template='plotly_white',
+    height=300,
+    width=800)
+
+    # Cambio del colore dell'area
+    fig.update_traces(marker=dict(color='green'),  # Cambia il colore dell'area
+                  line=dict(color='green')) 
     
     return fig
+
 # 5 Media de descarga en el tiempo
 def make_line(selected_province):
     df_mean_bajada = internet.groupby('Año').agg({'Mbps (Media de bajada)': 'mean'}).reset_index()
@@ -232,6 +231,8 @@ def make_line(selected_province):
     yaxis_title='Media de Mbps (Bajada)',
     xaxis=dict(tickmode='linear'),
     template='plotly_white')
+
+    fig.update_traces(line=dict(width=6, color = 'violet'))
     return fig
 
 # 6 Verificar el incremento percentual del uso de fibra en el ultimo ano
@@ -240,80 +241,80 @@ def make_line2(df_fibra_agrupado):
               title='Uso de Fibra Óptica por Año (excluyendo Buenos Aires)',
               labels={'Fibra óptica': 'Número de conexiones', 'Año': 'Año'},
               template='plotly_white')
-        fig.update_traces(textposition='top center', texttemplate='%{y:.2s}')
+        fig.update_traces(textposition='top center', texttemplate='%{y:.2s}', line=dict(width=6, color = 'blue'))
         return fig
 
 # 7 KPI incremento uso fibra optica
 # Datos para el gráfico
-def make_pie2(selected_province):
-    fig = px.pie(names=['Uso actual', 'Uso proyectado'], values=[fibra_optica_2023, uso_fibra_optica_proyectado], hole=0.3,
-                 title=f'Uso de Fibra Óptica en {selected_province} - Proyección')
+st.title('Proyección del Incremento en el Uso de Fibra Óptica')
+
+def make_bar3(internet):
+    # Filtrare l'ultimo trimestre
+    ultimo_trimestre = internet[internet['Trimestre'] == internet['Trimestre'].max()]
+
+    # Creare il grafico a barre usando Plotly Express
+    fig = px.bar(ultimo_trimestre, x='Provincia', y=['Fibra óptica', 'Fibra óptica proyectada'],
+                 color_discrete_sequence=['blue', 'violet'],
+                 labels={'Fibra óptica': 'Acceso actual', 'Fibra óptica proyectada': 'Acceso Proyectado'},
+                 title='Acceso a la fibra optica: Actual vs Proyectado por Provincia')
+
+    # Configurare il layout del grafico
+    fig.update_layout(xaxis_title='Provincia', yaxis_title='Fibra óptica',
+                      xaxis_tickangle=-45, legend_title_text='')
+
     return fig
+
+    
+    
 
 #############################################################################
 # Dashboard Main Panel
-col = st.columns((1.5, 5, 5), gap='medium')
+col = st.columns((2, 5, 5), gap='medium')
 
 with col[0]:
-  st.metric(label='Records', value=internet_filtered.shape[0], delta=None)
+  st.metric(label='Registros totales', value = internet.shape[0], delta=None)
+  st.metric(label='Registros filtrados', value=internet_filtered.shape[0], delta=None)
+  
   st.markdown('#### Ingresos anuales')
   area = make_area(ingresos_filtered)
   st.plotly_chart(area)
+
 with st.expander('', expanded=True):
    st.write()
+
 with col[1]:
   st.markdown('#### Media de descarga a lo largo de los anos')
   line = make_line(selected_province)
   st.plotly_chart(line)
+  
   st.markdown('#### Uso de fibra optica en el periodo 2022-2023')
   line2 = make_line2(df_fibra_agrupado)
   st.write(f"El incremento porcentual del uso de fibra óptica del 2022 al 2023 (excluyendo Buenos Aires) es: {aumento_percentuale:.2f}%")
   st.plotly_chart(line2)
-  st.markdown('#### Incremento del 2% en el acceso por cada 100 hogares en el proximo trimestre')
-  bar2 = make_bar2(internet)
-  st.plotly_chart(bar2)
   
+  st.markdown('#### Media de bajada')
+  bar = make_bar(selected_year)
+  st.plotly_chart(bar)
+
 with col[2]:
    st.markdown('#### Distribucion de accesos de tecnologias por provincia')
    pie = make_pie(selected_province)
    st.plotly_chart(pie)
-
-   st.markdown('#### Incremento proyectado en el uso de fibra optica para el proximo trimestre')
-   pie2 = make_pie2(selected_province)
-   st.plotly_chart(pie2)
    
+   st.markdown('#### Incremento del 2% en el acceso por cada 100 hogares en el proximo trimestre')
+   bar2 = make_bar2(internet)
+   st.plotly_chart(bar2)
   
-   st.markdown('#### Media de bajada')
-   bar = make_bar(selected_year)
-   st.plotly_chart(bar)
+   st.markdown('#### Incremento proyectado en el uso de fibra optica para el proximo trimestre')
+   bar3 = make_bar3(internet)
+   st.plotly_chart(bar3)
 
    
    
    
-   
-   
-   
-   
-
 # Mostra il DataFrame filtrato
 st.write('Datos para el año seleccionado:', internet_filtered)
 st.write('Datos de ingresos para el año seleccionado: ', ingresos_filtered)
-
-
-
-
-'''def make_line(vel_perc):
-    fig = px.line(vel_perc, x='Trimestre', y='Mbps (Media de bajada)', color = 'Año',
-              title='Media de Bajada en los Años',
-              labels={'Trimestre': 'Trimestre', 'Mbps (Media de bajada)': 'Media de Mbps (Bajada)', 'Año' : 'Año' })
-
-    fig.update_layout(
-    xaxis_title='Trimestre',
-    yaxis_title='Media de Mbps (Bajada)',
-    xaxis=dict(tickmode='linear'),
-    template='plotly_white')
-    
-    return fig'''
 
 
 
