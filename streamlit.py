@@ -6,6 +6,9 @@ import seaborn as sns
 import altair as alt
 from vega_datasets import data
 import geopandas as gpd
+import pydeck as pdk
+import folium
+from streamlit_folium import folium_static
 
 ###############################################
 # Configuaracion  de pagina
@@ -49,10 +52,8 @@ align-items: center;
 ingresos = pd.read_csv('data\ingresos_usd.csv')
 internet = pd.read_csv('data\internet.csv')
 
-# file de las provincias
-'''gdf = gpd.read_file("ProvinciasArgentina.geojson")'''
 
-
+###############################################
 # Titulo
 st.title("Analisis de la empresa Nacional de telecomunicaciones")
 st.header("Como se puede implementar el sistema de internet a nivel nacional")
@@ -123,10 +124,10 @@ value_vars = ['HASTA 512 kbps', '+ 512 Kbps - 1 Mbps', '+ 1 Mbps - 6 Mbps',
               '+ 6 Mbps - 10 Mbps', '+ 10 Mbps - 20 Mbps', '+ 20 Mbps - 30 Mbps', '+ 30 Mbps']
 
 # Transformar los datos para el gráfico de torta
-df_melted = internet_filtered.melt(id_vars=['Provincia'], value_vars=['HASTA 512 kbps', '+ 512 Kbps - 1 Mbps', 
-                                                        '+ 1 Mbps - 6 Mbps', '+ 6 Mbps - 10 Mbps', 
-                                                        '+ 10 Mbps - 20 Mbps', '+ 20 Mbps - 30 Mbps', 
-                                                        '+ 30 Mbps'])
+#df_melted = internet_filtered.melt(id_vars=['Provincia'], value_vars=['HASTA 512 kbps', '+ 512 Kbps - 1 Mbps', 
+                                                        #'+ 1 Mbps - 6 Mbps', '+ 6 Mbps - 10 Mbps', 
+                                                        #'+ 10 Mbps - 20 Mbps', '+ 20 Mbps - 30 Mbps', 
+                                                        #'+ 30 Mbps'])
 # agrupar por ano y trimestre la media de bajada
 #grouped_data = internet_filtered.groupby(['Año', 'Trimestre']).mean().reset_index()
 
@@ -308,9 +309,48 @@ with col[2]:
    st.markdown('#### Incremento proyectado en el uso de fibra optica para el proximo trimestre')
    bar3 = make_bar3(internet)
    st.plotly_chart(bar3)
+#########################################################
+# file de las provincias
 
-   
-   
+def load_geojson(filename):
+    gdf = gpd.read_file(filename)
+    return gdf
+
+gdf = gpd.read_file("data\ProvinciasArgentina.geojson")
+
+import os  
+#geojson_path = 'data\ProvinciasArgentina.geojson'  # Sostituisci con il percorso al tuo file GeoJSON
+
+# Unisci il DataFrame delle province con il DataFrame internet sulla colonna 'Provincia'/'nombre'
+#merged_df = gdf.merge(internet, left_on='nombre', right_on='Provincia', how='inner')
+#selected_province = st.selectbox('Seleziona una provincia', merged_df['Provincia'])
+
+# Filtra la geometria della provincia selezionata
+#selected_province_geo = merged_df[merged_df['Provincia'] == selected_province]
+
+layer = pdk.Layer(
+        'GeoJsonLayer',
+        data=gdf,
+        get_fill_color=[0, 255, 0, 100],
+        pickable=True,
+        auto_highlight=True
+    )
+
+view_state = pdk.ViewState(
+        latitude=-38.4161,   
+        longitude=-63.6167,  
+        zoom=4,              
+        pitch=0
+    )
+st.pydeck_chart(pdk.Deck(
+        layers = [layer],
+        initial_view_state=view_state,
+        tooltip={'text': f'{selected_province}'}
+    ))
+
+
+
+
    
 # Mostra il DataFrame filtrato
 st.write('Datos para el año seleccionado:', internet_filtered)
