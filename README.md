@@ -27,9 +27,9 @@ Puedes emcontrar mas informaciiones sobre [streamlit] en [https://streamlit.io/]
 ### Contenidos del Repositorio
  
 - ETL-EDA.ipynb: Análisis Exploratorio de Datos detallado, incluyendo gráficos, análisis de valores faltantes, outliers y registros duplicados.
-- dashboard: dashboard.html: Dashboard interactivo que permite explorar los datos con diferentes filtros.
-dashboard_source_code/: Código fuente utilizado para generar el dashboard.
-- data/: Datos limpios utilizados para el análisis.
+- KPI.ipynb: analisis de los Kpi graficados
+- data/: Datos limpios utilizados para el análisis
+- sttreamlit.py file py de streamlit para la visualizaciones
 
 ## Etapas de analisis
 > IMPORTANTE
@@ -86,13 +86,13 @@ Podemos ver cuales son las provincias que tienen las velocidades de conexion mas
 El uso de Fibra optica es un punto interesante a evaluar en este contexto, ya que suele representar la tecnologia mas avanzada deseable para los accesos a internet, debido a su velocidad y estabilidad.
 Por esto se podria crear un nuevo KPI.
 
-## Dashboard Interactivo
+### Dashboard Interactivo
 El dashboard <streamlit.py> permite:
 Exploración de datos: Filtros interactivos para detallar la información.
 Visualización clara: Gráficos adecuados para cada tipo de variable.
 Estética y funcionalidad: Diseño limpio y fácil de interpretar.
 
-## Análisis de KPIs
+### Análisis de KPIs
 El análisis de KPIs (KPI_analysis.ipynb) incluye:
 
 -KPI propuesto: Aumento del 2% en el acceso al servicio de internet para el próximo trimestre por cada 100 hogares, por provincia.
@@ -101,8 +101,8 @@ KPIs adicionales:
 - Incremento en el uso de la fibra optica.
 Cada KPI es medido, graficado y analizado.
 
-### Calculo del KPI propuesto: 
-#### Aumentar en un 2% el acceso al servicio de internet para el próximo trimestre, cada 100 hogares, por provincia
+#### Calculo del KPI propuesto: 
+Aumentar en un 2% el acceso al servicio de internet para el próximo trimestre, cada 100 hogares, por provincia
 
 ```sh
 # Calcular el nuevo acceso proyectado
@@ -128,8 +128,8 @@ Comparación entre Provincias: Analizar cómo se comparan las provincias entre s
 
 Tendencias Generales: Observar tendencias generales en el acceso a internet puede ayudar a identificar patrones. Por ejemplo, si ciertas regiones geográficas muestran consistentemente bajo crecimiento, esto puede indicar una necesidad de enfoques regionales específicos.
 
-### KPI 2
-#### Incrementar la media de bajada en el proximo ano, hasta la media nacional, en las provincias que no llegan a la media. 
+#### KPI 2
+Incrementar la media de bajada en el proximo ano, hasta la media nacional, en las provincias que no llegan a la media. 
 
 Descripción: Incrementar la velocidad de bajada promedio en las provincias que, al 2023, no alcanzan la media nacional de 77.78 Mbps. El objetivo es que todas las provincias por debajo de esta media la alcancen para el año 2025.
 Provincias como Catamarca, Chaco, y Chubut tienen velocidades de bajada significativamente menores que la media nacional. Estas provincias necesitarán aumentar su velocidad de bajada en varios Mbps para alcanzar la meta establecida para 2025.
@@ -151,8 +151,9 @@ Estos subsidios pueden estar dirigidos tanto a proveedores de servicios de Inter
 Lanzar campañas de educación y concienciación para informar a las comunidades sobre los beneficios de mejorar la infraestructura de Internet.
 Involucrar a las comunidades locales en el proceso de planificación y mejora de las conexiones.
 
-### KPI 3:
-#### Incremento percentual en el uso de fibra optica en el proximo trimestre
+#### KPI 3:
+Incremento percentual en el uso de fibra optica en el proximo trimestre
+
 Del EDA se nota que a parte Buenos Aires, el acceso a la fibra optica no esta muy bien 
 distribuido en el Pais, en general es bastante bajo. Se podria incrementar el uso 
 de esta tecnologia? Como?
@@ -176,10 +177,11 @@ Hay que remarcar que se excluyo Buenos Aires del calculo, ya que tiene muy buen 
 internet['Acceso proyectado fibra optica'] = internet['Accesos fibra optica'] * 1.13
 ```
 
-## Reporte Final:
+Calcular el incremento trimestral 
+(1+R)=(1+r) ^ 4 donde R = incremento anual y r = incremento trimestral
 
-Resumen del análisis: Principales hallazgos del EDA y del dashboard.
-Conclusiones: Insights y recomendaciones basadas en los datos.
-Propuestas de mejora: Sugerencias para mejorar la calidad del servicio y oportunidades de crecimiento.
+incremento_anual = 46% = 0.4601
+incremento_trimestral = [((1 + 0,4601) / 100) ** (1/4)] - 1 = 0.99 = 9,9%
+
 
 
