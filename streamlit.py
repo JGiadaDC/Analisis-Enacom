@@ -9,6 +9,7 @@ import geopandas as gpd
 import pydeck as pdk
 import folium
 from streamlit_folium import folium_static
+from folium.features import GeoJsonTooltip
 
 ###############################################
 # Configuaracion  de pagina
@@ -51,13 +52,16 @@ align-items: center;
 # importamos los datos 
 ingresos = pd.read_csv('data\ingresos_usd.csv')
 internet = pd.read_csv('data\internet.csv')
+gdf = gpd.read_file("data\ProvinciasArgentina.geojson")
 
+# Filtrar las filas innecesarias del DataFrame
+internet = internet.iloc[20:]
 
 ###############################################
 # Titulo
 st.title("Analisis de la empresa Nacional de telecomunicaciones")
-st.header("Como se puede implementar el sistema de internet a nivel nacional")
-st.subheader("Datos oficiales de Enacom, Argentina")
+st.header("Como se puede implementar el sistema de internet a nivel nacional?")
+#st.subheader("Datos oficiales de Enacom, Argentina")
 
 pd.options.display.float_format = '{:.2f}'.format
 
@@ -99,22 +103,40 @@ ingresos = ingresos.sort_values(by='Año')
 # df_q4 = internet[internet['Trimestre'] == 4]
 
 
-
 # Sidebar
 st.sidebar.markdown('### Bienvenido!')
-st.sidebar.markdown('Con estos filtros, al seleccionar la provincia y el Año de interes, se veran los datos correspondientes')
+st.sidebar.markdown('Estos son datos oficiales de ENACOM, Argentina. Con los filtros de abajo, podras ver los datos correspondientes a provincia y Año')
 
 with st.sidebar:
     st.title('Dashboard de Telecomunicaciones')
     # selecciona el ano de interes
     years_unique = internet['Año'].unique()
-    selected_year = st.selectbox('Select a year', sorted(years_unique))
+    selected_year = st.sidebar.selectbox('Selecciona un año', years_unique)
     # selecciona la provincia de interes
     provinces_unique = internet['Provincia'].unique()
-    selected_province = st.selectbox('Seleziona una provincia', sorted(provinces_unique))
+    selected_province = st.sidebar.selectbox('Seleziona una provincia', provinces_unique)
     # filtrar los datos en base al input del utente
     internet_filtered = internet[(internet['Año'] == selected_year)]
     ingresos_filtered = ingresos[(ingresos['Año'] == selected_year)]
+
+
+
+# Convertir 'Accesos por cada 100 hab' y 'Accesos por cada 100 hogares' a numérico
+internet_filtered['Accesos por cada 100 hab'] = pd.to_numeric(internet_filtered['Accesos por cada 100 hab'], errors='coerce')
+internet_filtered['Accesos por cada 100 hogares'] = pd.to_numeric(internet_filtered['Accesos por cada 100 hogares'], errors='coerce')
+
+# Obtener el valor de 'Accesos por cada 100 hogares' para la provincia y año seleccionados
+selected_data = internet_filtered[internet_filtered['Provincia'] == selected_province]
+if not selected_data.empty:
+    access_per_100_households = selected_data['Accesos por cada 100 hogares'].values[0]
+else:
+     access_per_100_households = 'N/A'
+
+
+
+
+
+
 
 
 # ingresos_selected_year = ingresos[ingresos['Año'] == int(selected_year)]
@@ -152,6 +174,49 @@ internet['Fibra óptica proyectada'] = internet['Fibra óptica'] * (1 + incremen
 
 ############################################################
 # VISUALIZACIONES 
+## mapa
+# Crear un mapa base
+m = folium.Map(location=[-38.4161, -63.6167], zoom_start=5)
+
+# Unión de datos
+gdf = gdf.merge(internet_filtered, left_on='nombre', right_on='Provincia')
+
+
+# Crear el objeto Choropleth
+choropleth = folium.Choropleth(
+    geo_data=gdf,
+    name='choropleth',
+    data=gdf,
+    columns=['nombre', 'Accesos por cada 100 hab'],
+    key_on='feature.properties.nombre',
+    fill_color='PuRd',
+    fill_opacity=0.7,
+    line_opacity=0.2,
+    legend_name='Accesos por cada 100 habitantes'
+).add_to(m)
+
+# Añadir tooltips
+folium.GeoJson(
+    gdf,
+    style_function=lambda feature: {
+        'fillColor': '#ffffff',
+        'color': 'black',
+        'weight': 0.5,
+        'fillOpacity': 0
+    },
+    tooltip=GeoJsonTooltip(
+        fields=['nombre', 'Accesos por cada 100 hab'],
+        aliases=['Provincia', 'Accesos por cada 100 habitantes'],
+        localize=True,
+        style=("background-color: white; color: black; font-family: Arial; "
+           "font-size: 18px; padding: 15px; border: 2px solid black; border-radius: 3px;")
+    )
+).add_to(m)
+
+# Agregar un control de capas
+folium.LayerControl().add_to(m)
+
+
 #1  Tecnologias
 def make_pie(selected_province):
     df_filtered = internet[internet['Provincia'] == selected_province]
@@ -233,7 +298,7 @@ def make_line(selected_province):
     xaxis=dict(tickmode='linear'),
     template='plotly_white')
 
-    fig.update_traces(line=dict(width=6, color = 'violet'))
+    fig.update_traces(line=dict(width=6, color = 'skyblue'))
     return fig
 
 # 6 Verificar el incremento percentual del uso de fibra en el ultimo ano
@@ -242,13 +307,11 @@ def make_line2(df_fibra_agrupado):
               title='Uso de Fibra Óptica por Año (excluyendo Buenos Aires)',
               labels={'Fibra óptica': 'Número de conexiones', 'Año': 'Año'},
               template='plotly_white')
-        fig.update_traces(textposition='top center', texttemplate='%{y:.2s}', line=dict(width=6, color = 'blue'))
+        fig.update_traces(textposition='top center', texttemplate='%{y:.2s}', line=dict(width=6, color = 'violet'))
         return fig
 
 # 7 KPI incremento uso fibra optica
 # Datos para el gráfico
-st.title('Proyección del Incremento en el Uso de Fibra Óptica')
-
 def make_bar3(internet):
     # Filtrare l'ultimo trimestre
     ultimo_trimestre = internet[internet['Trimestre'] == internet['Trimestre'].max()]
@@ -273,10 +336,13 @@ def make_bar3(internet):
 col = st.columns((2, 5, 5), gap='medium')
 
 with col[0]:
-  st.metric(label='Registros totales', value = internet.shape[0], delta=None)
-  st.metric(label='Registros filtrados', value=internet_filtered.shape[0], delta=None)
-  
-  st.markdown('#### Ingresos anuales')
+  #st.metric(label='Registros totales', value = internet.shape[0], delta=None)
+  #st.metric(label='Registros filtrados', value=internet_filtered.shape[0], delta=None)
+  label_metric = f"Accesos por cada 100 hogares\n{selected_province} ({selected_year})"
+  st.metric(label=label_metric, value=access_per_100_households
+            )
+
+  st.markdown('')
   area = make_area(ingresos_filtered)
   st.plotly_chart(area)
 
@@ -284,70 +350,45 @@ with st.expander('', expanded=True):
    st.write()
 
 with col[1]:
-  st.markdown('#### Media de descarga a lo largo de los anos')
-  line = make_line(selected_province)
-  st.plotly_chart(line)
+  folium_static(m,width=650, height=500 )
   
-  st.markdown('#### Uso de fibra optica en el periodo 2022-2023')
-  line2 = make_line2(df_fibra_agrupado)
-  st.write(f"El incremento porcentual del uso de fibra óptica del 2022 al 2023 (excluyendo Buenos Aires) es: {aumento_percentuale:.2f}%")
-  st.plotly_chart(line2)
-  
-  st.markdown('#### Media de bajada')
+  st.markdown('#### Distribucion de accesos de tecnologias por provincia')
+  pie = make_pie(selected_province)
+  st.plotly_chart(pie)
+
+
+   
+  st.markdown('#### Meta 2025: alcanzar la media de bajada nacional')
   bar = make_bar(selected_year)
   st.plotly_chart(bar)
 
+  st.markdown('#### Meta proximo trimestre: Incrementar el uso de fibra optica')
+  bar3 = make_bar3(internet)
+  st.plotly_chart(bar3)
+
 with col[2]:
-   st.markdown('#### Distribucion de accesos de tecnologias por provincia')
-   pie = make_pie(selected_province)
-   st.plotly_chart(pie)
-   
-   st.markdown('#### Incremento del 2% en el acceso por cada 100 hogares en el proximo trimestre')
+   st.markdown('#### Media de descarga a lo largo de los anos')
+   line = make_line(selected_province)
+   st.plotly_chart(line)
+
+   st.markdown('#### Uso de fibra optica en el periodo 2022-2023')
+   line2 = make_line2(df_fibra_agrupado)
+   st.write(f"El incremento porcentual del uso de fibra óptica del 2022 al 2023 (excluyendo Buenos Aires) es: {aumento_percentuale:.2f}%")
+   st.plotly_chart(line2)
+  
+
+   st.markdown('#### Meta proximo trimestre: Incrementar del 2% el acceso por cada 100 hogares')
    bar2 = make_bar2(internet)
    st.plotly_chart(bar2)
   
-   st.markdown('#### Incremento proyectado en el uso de fibra optica para el proximo trimestre')
-   bar3 = make_bar3(internet)
-   st.plotly_chart(bar3)
 #########################################################
 # file de las provincias
 
-def load_geojson(filename):
-    gdf = gpd.read_file(filename)
-    return gdf
-
-gdf = gpd.read_file("data\ProvinciasArgentina.geojson")
-
-import os  
-#geojson_path = 'data\ProvinciasArgentina.geojson'  # Sostituisci con il percorso al tuo file GeoJSON
-
-# Unisci il DataFrame delle province con il DataFrame internet sulla colonna 'Provincia'/'nombre'
-#merged_df = gdf.merge(internet, left_on='nombre', right_on='Provincia', how='inner')
-#selected_province = st.selectbox('Seleziona una provincia', merged_df['Provincia'])
-
-# Filtra la geometria della provincia selezionata
-#selected_province_geo = merged_df[merged_df['Provincia'] == selected_province]
-
-layer = pdk.Layer(
-        'GeoJsonLayer',
-        data=gdf,
-        get_fill_color=[0, 255, 0, 100],
-        pickable=True,
-        auto_highlight=True
-    )
-
-view_state = pdk.ViewState(
-        latitude=-38.4161,   
-        longitude=-63.6167,  
-        zoom=4,              
-        pitch=0
-    )
-st.pydeck_chart(pdk.Deck(
-        layers = [layer],
-        initial_view_state=view_state,
-        tooltip={'text': f'{selected_province}'}
-    ))
-
+#def load_geojson(filename):
+    #gdf = gpd.read_file(filename)
+    #return gdf
+# Muestra del DataFrame para verificar la carga correcta de los datos
+#st.write("Datos del DataFrame:", internet.head())
 
 
 
