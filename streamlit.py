@@ -59,9 +59,11 @@ internet = internet.iloc[20:]
 
 ###############################################
 # Titulo
+st.image('https://github.com/JGiadaDC/Analisis-Enacom/raw/main/Logo_enacom.png', width=200)
 st.title("Analisis de la empresa Nacional de telecomunicaciones")
 st.header("Como se puede implementar el sistema de internet a nivel nacional?")
 #st.subheader("Datos oficiales de Enacom, Argentina")
+
 
 pd.options.display.float_format = '{:.2f}'.format
 
@@ -397,7 +399,7 @@ with col[2]:
 st.write('Datos para el año seleccionado:', internet_filtered)
 st.write('Datos de ingresos para el año seleccionado: ', ingresos_filtered)
 
-
+st.image('https://github.com/JGiadaDC/Analisis-Enacom/raw/main/Logo_enacom.png', width=200)
 
 
 
