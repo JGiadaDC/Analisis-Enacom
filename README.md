@@ -131,6 +131,8 @@ Tendencias Generales: Observar tendencias generales en el acceso a internet pued
 #### KPI 2
 Incrementar la media de bajada en el proximo ano, hasta la media nacional, en las provincias que no llegan a la media. 
 
+Calculo: calcular la media de bajada nacional por el ano 2023 y establecerla como meta para el 2025. Se tomo en cuenta un plazo de tiempo largo para tener suficiente tiempo para monitorar  implemetar medidas, ya que muchas provincias estan mucho por debajo de la media todavia. Luego calcular las provincias que no alcanzan la media y graficarlas.
+
 Descripción: Incrementar la velocidad de bajada promedio en las provincias que, al 2023, no alcanzan la media nacional de 77.78 Mbps. El objetivo es que todas las provincias por debajo de esta media la alcancen para el año 2025.
 Provincias como Catamarca, Chaco, y Chubut tienen velocidades de bajada significativamente menores que la media nacional. Estas provincias necesitarán aumentar su velocidad de bajada en varios Mbps para alcanzar la meta establecida para 2025.
 Provincias por Debajo de la Media Nacional en 2023
@@ -161,10 +163,6 @@ de esta tecnologia? Como?
 Implementación del KPI de Incremento en el Uso de la Fibra Óptica
 El KPI del incremento en el uso de la fibra óptica puede calcularse como el 
 porcentaje de crecimiento de los accesos de fibra óptica de un periodo a otro.
-
-Cálculo del Incremento en el Uso de la Fibra Óptica: Calcula el porcentaje de 
-incremento de accesos de fibra óptica entre los distintos años disponibles. 
-
 Para el calculo de este KPI, primero voy a medir el incremento en el ano pasado (2022-2023)
 
 ```sh
@@ -183,5 +181,13 @@ Calcular el incremento trimestral
 incremento_anual = 46% = 0.4601
 incremento_trimestral = [((1 + 0,4601) / 100) ** (1/4)] - 1 = 0.99 = 9,9%
 
+#### Conclusiones 
+Crecimiento Sostenido: Un aumento del 9.9% indica un crecimiento sólido en la adopción de fibra óptica. Esto sugiere que más usuarios o entidades están optando por esta tecnología, lo cual podría estar impulsado por una mayor demanda de conexiones de alta velocidad y mayor ancho de banda.
 
+Inversión en Infraestructura: Es posible que los proveedores de servicios estén invirtiendo en expandir y mejorar la infraestructura de fibra óptica para satisfacer la creciente demanda. Este tipo de inversión es crucial para mantener y mejorar la calidad del servicio y la capacidad de respuesta a las necesidades del mercado.
 
+Tendencia hacia Conexiones de Alta Velocidad: Un aumento significativo en la adopción de fibra óptica también puede indicar una tendencia creciente hacia conexiones de Internet de alta velocidad. Esto es importante en un contexto donde las aplicaciones y servicios en línea requieren cada vez más capacidad de banda ancha.
+
+Impacto en la Competitividad: Las empresas y regiones que invierten en infraestructura de fibra óptica pueden experimentar beneficios en términos de competitividad económica y digital. La conectividad de alta velocidad es crucial para la innovación, la eficiencia empresarial y el acceso equitativo a recursos digitales.
+
+Desafíos y Oportunidades: Aunque un crecimiento del 9.9% es positivo, también puede plantear desafíos en términos de gestionar la expansión de la red y asegurar que todos los usuarios tengan acceso equitativo. Esto podría presentar oportunidades para mejorar políticas públicas y regulaciones que promuevan la inversión en infraestructura digital.
